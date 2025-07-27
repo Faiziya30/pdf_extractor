@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  pdf-extractor:
+    build: .
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
