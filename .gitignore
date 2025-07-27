@@ -1,0 +1,83 @@
+# ========================
+# General OS & IDE
+# ========================
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+*.bak
+*.log
+
+# ========================
+# Python (Backend)
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.env
+.env.*
+.venv/
+venv/
+ENV/
+backend/app/input/
+backend/app/output/
+backend/logs/
+backend/*.log
+
+# ========================
+# Docker
+# ========================
+*.container
+*.pid
+*.tar
+docker-compose.override.yml
+
+# ========================
+# Node.js (Frontend)
+# ========================
+node_modules/
+dist/
+build/
+.npm/
+.yarn/
+.pnp/
+.pnp.js
+*.lock
+
+# ========================
+# React (Vite)
+# ========================
+.vite/
+*.local
+frontend/.env.*
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+
+# ========================
+# Test Output / Coverage
+# ========================
+coverage/
+*.cover
+*.lcov
+
+# ========================
+# Misc
+# ========================
+*.tmp
+*.temp
+*.log
+*.bak
+*.old
+*.orig
+*.pdf~
+
+# ========================
+# Git
+# ========================
+.gitignore
