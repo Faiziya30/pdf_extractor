@@ -1,6 +1,0 @@
-PyMuPDF==1.23.14
-unicodedata2==15.1.0
-Flask==2.3.3
-PyMuPDF==1.23.14
-Werkzeug==2.3.7
-unicodedata2==15.1.0
