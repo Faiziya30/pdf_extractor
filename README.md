@@ -10,14 +10,14 @@ pdf_extractor/
 ├── backend/                        # 🔙 Flask app
 │   ├── app/
 │   │   ├── input/                 # ⬆ Uploaded PDFs go here temporarily
-│   │   ├── output/                # 📤 Stores JSON outputs (optional for batch processing)
+│   │   ├── output/                # 📤 Stores JSON outputs 
 │   │   ├── __pycache__/
 │   │   ├── pdf_extractor.py       # 🧠 PDF extraction logic
 │   │   └── test_validation.py     # ✅ Unit tests (optional)
 │   ├── app.py                     # 🚀 Flask API entry point
 │   ├── requirements.txt           # 📦 Python dependencies
-│   ├── dockerfile                 # 🐳 Docker configuration (optional)
-│   ├── docker-compose.yml         # 🐳 Local testing setup (optional)
+│   ├── dockerfile                 # 🐳 Docker configuration 
+│   ├── docker-compose.yml         # 🐳 Local testing setup 
 │   └── .gitignore                 # ❌ Ignores venv, __pycache__, etc.
 │
 ├── frontend/                      # 🎨 React App
@@ -41,7 +41,7 @@ pdf_extractor/
 │   ├── vite.config.js             # Vite configuration
 │   └── .gitignore                 # Ignores node_modules, etc.
 │
-├── .gitignore                     # Global ignore (optional)
+├── .gitignore                     # Global ignore 
 ├── README.md                      # 📘 This file
 ```
 
