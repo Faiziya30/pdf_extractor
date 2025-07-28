@@ -1,11 +1,11 @@
-# Smart-PDF-Insight
+# pdf_extractor
 
-Smart-PDF-Insight is a web application designed to extract structured outlines from PDF documents. It features a Flask-based backend for processing PDFs and a React frontend with Tailwind CSS for a user-friendly interface. Users can upload PDFs, preview them, and view extracted headings in an organized format, making it ideal for document analysis and summarization.
+pdf_extractor is a web application designed to extract structured outlines from PDF documents. It features a Flask-based backend for processing PDFs and a React frontend with Tailwind CSS for a user-friendly interface. Users can upload PDFs, preview them, and view extracted headings in an organized format, making it ideal for document analysis and summarization.
 
 ## Project Structure
 
 ```
-Smart-PDF-Insight/
+pdf_extractor/
 │
 ├── backend/                        # 🔙 Flask app
 │   ├── app/
@@ -101,7 +101,6 @@ Smart-PDF-Insight/
    ```
 
    The Flask API will start at `http://localhost:5000`.
-   Test the health endpoint: `curl http://localhost:5000/health`.
 
 ### Frontend Setup
 
@@ -219,8 +218,4 @@ Smart-PDF-Insight/
 
 ## Contributors
 
-[Your Name/Team Name] - Hackathon team for Smart-PDF-Insight.
-
-## License
-
-MIT License - feel free to use and modify for your needs.
+[Faiziya,Rakhi,Ayush]
