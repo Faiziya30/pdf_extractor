@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  pdf-extractor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdf_extractor_app
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+    command: python pdf_extractor.py
