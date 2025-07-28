@@ -1,6 +1,7 @@
 pdf_extractor
 pdf_extractor is a web application designed to extract structured outlines from PDF documents. The project features a Flask-based backend that processes uploaded PDFs and a React frontend with Tailwind CSS for a seamless user experience. Users can upload PDFs, view previews, and receive extracted headings in an organized format, making it ideal for document analysis and summarization.
-Project Structure
+
+🏗️ Architecture
 pdf_extractor/
 │
 ├── backend/                        # 🔙 Flask app
@@ -9,11 +10,11 @@ pdf_extractor/
 │   │   ├── output/                # 📤 Stores JSON outputs (optional for batch processing)
 │   │   ├── __pycache__/
 │   │   ├── pdf_extractor.py       # 🧠 PDF extraction logic
-│   │   └── test_validation.py     # ✅ Unit tests 
+│   │   └── test_validation.py     # ✅ Unit tests (optional)
 │   ├── app.py                     # 🚀 Flask API entry point
 │   ├── requirements.txt           # 📦 Python dependencies
-│   ├── dockerfile                 # 🐳 Docker configuration 
-│   ├── docker-compose.yml         # 🐳 Local testing setup 
+│   ├── dockerfile                 # 🐳 Docker configuration (optional)
+│   ├── docker-compose.yml         # 🐳 Local testing setup (optional)
 │   └── .gitignore                 # ❌ Ignores venv, __pycache__, etc.
 │
 ├── frontend/                      # 🎨 React App
@@ -22,7 +23,9 @@ pdf_extractor/
 │   │   ├── assets/                # Images, fonts, etc.
 │   │   ├── components/            # Reusable React components
 │   │   ├── pages/
-│   │   │   └── Upload.jsx         # 📤 PDF upload and result display
+│   │   │   ├── Home.jsx           # 🏠 Home page
+│   │   │   ├── Upload.jsx         # 📤 PDF upload and preview page
+│   │   │   └── Results.jsx        # 📊 Results display page
 │   │   ├── services/
 │   │   │   └── api.js             # 🔌 Axios API calls to backend
 │   │   ├── App.jsx                # Main app component
