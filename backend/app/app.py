@@ -1,28 +1,25 @@
-#!/usr/bin/env python3
-"""
-Flask API for PDF Heading Extraction
-Integrates with PDFHeadingExtractor class from pdf_extractor.py
-"""
-
 from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
-from werkzeug.exceptions import RequestEntityTooLarge
+from flask_cors import CORS
 import os
-import uuid
-import time
+import json
 import logging
 from datetime import datetime
+from werkzeug.utils import secure_filename
+import tempfile
+import shutil
+import uuid
+import fitz  # PyMuPDF
 from pdf_extractor import PDFHeadingExtractor
 
-
-# Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 # Configuration
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
-app.config['UPLOAD_FOLDER'] = 'app/input'
-app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
-app.config['CLEANUP_AFTER_PROCESSING'] = True  # Set to False to keep files for debugging
+UPLOAD_FOLDER = 'app/input'
+OUTPUT_FOLDER = 'app/output'
+ALLOWED_EXTENSIONS = {'pdf'}
+CLEANUP_AFTER_PROCESSING = True  # Set to False for debugging
 
 # Setup logging
 logging.basicConfig(
@@ -35,16 +32,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create necessary directories
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# Initialize PDF extractor
-pdf_extractor = PDFHeadingExtractor()
+# Ensure directories exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """Check if the uploaded file has an allowed extension"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def generate_unique_filename(original_filename):
     """Generate a unique filename to prevent conflicts"""
@@ -53,19 +47,9 @@ def generate_unique_filename(original_filename):
     name, ext = os.path.splitext(secure_filename(original_filename))
     return f"{timestamp}_{unique_id}_{name}{ext}"
 
-def cleanup_file(file_path):
-    """Safely delete a file"""
-    try:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            logger.info(f"Cleaned up file: {file_path}")
-    except Exception as e:
-        logger.warning(f"Failed to cleanup file {file_path}: {str(e)}")
-
 def validate_pdf_file(file_path):
-    """Basic validation to ensure the file is a valid PDF"""
+    """Validate PDF file (non-empty, within page limit)"""
     try:
-        import fitz  # PyMuPDF
         doc = fitz.open(file_path)
         page_count = len(doc)
         doc.close()
@@ -86,79 +70,50 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'service': 'PDF Heading Extractor API'
+        'service': 'PDF Extractor API'
     })
 
 @app.route('/extract', methods=['POST'])
-def extract_headings():
-    """
-    Extract headings from uploaded PDF file
-    
-    Expected input: multipart/form-data with 'pdf' field containing the PDF file
-    Returns: JSON with title and outline structure
-    """
-    start_time = time.time()
-    uploaded_file_path = None
-    
+def extract_outline():
+    """Extract structured outline from PDF (matches Upload.jsx)"""
     try:
-        # Check if request has file part
         if 'pdf' not in request.files:
             logger.warning("Request missing 'pdf' file field")
-            return jsonify({
-                'error': 'No file provided',
-                'message': 'Please upload a PDF file using the "pdf" field'
-            }), 400
+            return jsonify({'error': 'No file provided', 'message': 'Please upload a PDF file using the "pdf" field'}), 400
         
         file = request.files['pdf']
-        
-        # Check if file was actually selected
         if file.filename == '':
             logger.warning("Empty filename in request")
-            return jsonify({
-                'error': 'No file selected',
-                'message': 'Please select a PDF file to upload'
-            }), 400
+            return jsonify({'error': 'No file selected', 'message': 'Please select a PDF file to upload'}), 400
         
-        # Validate file type
         if not allowed_file(file.filename):
             logger.warning(f"Invalid file type: {file.filename}")
-            return jsonify({
-                'error': 'Invalid file type',
-                'message': 'Only PDF files are allowed'
-            }), 400
+            return jsonify({'error': 'Invalid file type', 'message': 'Only PDF files are allowed'}), 400
         
         # Generate unique filename and save file
         unique_filename = generate_unique_filename(file.filename)
-        uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
         logger.info(f"Saving uploaded file: {file.filename} -> {unique_filename}")
-        file.save(uploaded_file_path)
+        file.save(filepath)
         
         # Validate PDF file
-        is_valid, validation_error = validate_pdf_file(uploaded_file_path)
+        is_valid, validation_error = validate_pdf_file(filepath)
         if not is_valid:
             logger.error(f"PDF validation failed: {validation_error}")
-            return jsonify({
-                'error': 'Invalid PDF',
-                'message': validation_error
-            }), 400
+            if CLEANUP_AFTER_PROCESSING:
+                os.remove(filepath)
+            return jsonify({'error': 'Invalid PDF', 'message': validation_error}), 400
         
-        # Process PDF with heading extractor
-        logger.info(f"Processing PDF: {unique_filename}")
-        processing_start = time.time()
+        # Extract outline
+        extractor = PDFExtractor()
+        result = extractor.extract_outline(filepath)
         
-        result = pdf_extractor.process_pdf(uploaded_file_path)
-        
-        processing_time = time.time() - processing_start
-        logger.info(f"PDF processing completed in {processing_time:.2f} seconds")
-        
-        # Validate extraction result
+        # Validate result
         if not result or 'title' not in result or 'outline' not in result:
             logger.error("PDF extraction returned invalid result")
-            return jsonify({
-                'error': 'Extraction failed',
-                'message': 'Failed to extract headings from the PDF'
-            }), 500
+            if CLEANUP_AFTER_PROCESSING:
+                os.remove(filepath)
+            return jsonify({'error': 'Extraction failed', 'message': 'Failed to extract headings from the PDF'}), 500
         
         # Log extraction statistics
         heading_count = len(result.get('outline', []))
@@ -169,64 +124,119 @@ def extract_headings():
             'title': result['title'],
             'outline': result['outline'],
             'metadata': {
-                'processing_time': round(processing_time, 2),
                 'total_headings': heading_count,
                 'original_filename': file.filename,
                 'timestamp': datetime.now().isoformat()
             }
         }
         
-        total_time = time.time() - start_time
-        logger.info(f"Request completed in {total_time:.2f} seconds")
+        # Clean up uploaded file
+        if CLEANUP_AFTER_PROCESSING:
+            os.remove(filepath)
+            logger.info(f"Cleaned up file: {filepath}")
         
         return jsonify(response)
     
-    except RequestEntityTooLarge:
-        logger.error("File too large")
-        return jsonify({
-            'error': 'File too large',
-            'message': 'PDF file exceeds the maximum size limit of 50MB'
-        }), 413
-    
     except Exception as e:
         logger.error(f"Unexpected error during processing: {str(e)}")
-        return jsonify({
-            'error': 'Processing failed',
-            'message': 'An unexpected error occurred while processing the PDF'
-        }), 500
-    
-    finally:
-        # Cleanup uploaded file if configured to do so
-        if uploaded_file_path and app.config['CLEANUP_AFTER_PROCESSING']:
-            cleanup_file(uploaded_file_path)
+        if filepath and os.path.exists(filepath) and CLEANUP_AFTER_PROCESSING:
+            os.remove(filepath)
+        return jsonify({'error': 'Processing failed', 'message': str(e)}), 500
 
-@app.route('/stats', methods=['GET'])
-def get_stats():
-    """Get API usage statistics"""
-    upload_dir = app.config['UPLOAD_FOLDER']
+@app.route('/analyze-documents', methods=['POST'])
+def analyze_documents():
+    """Persona-driven document intelligence"""
+    try:
+        persona = request.form.get('persona')
+        job_to_be_done = request.form.get('job_to_be_done')
+        
+        if not persona or not job_to_be_done:
+            return jsonify({'error': 'Persona and job-to-be-done are required'}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({'error': 'No files provided'}), 400
+        
+        if len(files) > 10:
+            return jsonify({'error': 'Maximum 10 files allowed'}), 400
+        
+        temp_dir = tempfile.mkdtemp()
+        file_paths = []
+        
+        try:
+            for file in files:
+                if allowed_file(file.filename):
+                    filename = generate_unique_filename(file.filename)
+                    filepath = os.path.join(temp_dir, filename)
+                    file.save(filepath)
+                    file_paths.append(filepath)
+            
+            if not file_paths:
+                return jsonify({'error': 'No valid PDF files found'}), 400
+            
+            extractor = PDFExtractor()
+            result = extractor.analyze_documents(file_paths, persona, job_to_be_done)
+            
+            return jsonify(result)
+        
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
     
-    stats = {
-        'upload_directory': upload_dir,
-        'directory_exists': os.path.exists(upload_dir),
-        'cleanup_enabled': app.config['CLEANUP_AFTER_PROCESSING'],
-        'max_file_size_mb': app.config['MAX_CONTENT_LENGTH'] // (1024 * 1024),
-        'allowed_extensions': list(app.config['ALLOWED_EXTENSIONS']),
-        'timestamp': datetime.now().isoformat()
-    }
+    except Exception as e:
+        return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
+
+@app.route('/batch-process', methods=['POST'])
+def batch_process():
+    """Batch processing for Docker environment"""
+    try:
+        input_dir = UPLOAD_FOLDER
+        output_dir = OUTPUT_FOLDER
+        
+        if not os.path.exists(input_dir):
+            return jsonify({'error': 'Input directory not found'}), 404
+        
+        extractor = PDFExtractor()
+        processed_files = []
+        
+        for filename in os.listdir(input_dir):
+            if filename.lower().endswith('.pdf'):
+                input_path = os.path.join(input_dir, filename)
+                output_filename = filename.replace('.pdf', '.json')
+                output_path = os.path.join(output_dir, output_filename)
+                
+                try:
+                    result = extractor.extract_outline(input_path)
+                    with open(output_path, 'w', encoding='utf-8') as f:
+                        json.dump(result, f, indent=2, ensure_ascii=False)
+                    
+                    processed_files.append({
+                        'input': filename,
+                        'output': output_filename,
+                        'status': 'success'
+                    })
+                    
+                except Exception as e:
+                    processed_files.append({
+                        'input': filename,
+                        'output': output_filename,
+                        'status': 'error',
+                        'error': str(e)
+                    })
+        
+        return jsonify({
+            'message': f'Processed {len(processed_files)} files',
+            'files': processed_files
+        })
     
-    # Count files in upload directory (if cleanup is disabled)
-    if os.path.exists(upload_dir):
-        files = [f for f in os.listdir(upload_dir) if f.endswith('.pdf')]
-        stats['files_in_upload_dir'] = len(files)
-    
-    return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': f'Batch processing failed: {str(e)}'}), 500
 
 @app.errorhandler(413)
 def too_large(e):
     """Handle file too large errors"""
     return jsonify({
         'error': 'File too large',
-        'message': 'The uploaded file exceeds the maximum size limit'
+        'message': 'The uploaded file exceeds the maximum size limit of 50MB'
     }), 413
 
 @app.errorhandler(404)
@@ -235,7 +245,7 @@ def not_found(e):
     return jsonify({
         'error': 'Endpoint not found',
         'message': 'The requested endpoint does not exist',
-        'available_endpoints': ['/extract', '/health', '/stats']
+        'available_endpoints': ['/extract', '/health', '/analyze-documents', '/batch-process']
     }), 404
 
 @app.errorhandler(405)
@@ -256,16 +266,8 @@ def internal_error(e):
     }), 500
 
 if __name__ == '__main__':
-    # Development server configuration
-    logger.info("Starting PDF Heading Extractor API")
-    logger.info(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
+    logger.info("Starting PDF Extractor API")
+    logger.info(f"Upload folder: {UPLOAD_FOLDER}")
     logger.info(f"Max file size: {app.config['MAX_CONTENT_LENGTH'] // (1024 * 1024)}MB")
-    logger.info(f"Cleanup after processing: {app.config['CLEANUP_AFTER_PROCESSING']}")
-    
-    # Run the Flask app
-    app.run(
-        host='0.0.0.0',  # Accept connections from any IP
-        port=5000,       # Default Flask port
-        debug=False,     # Set to True for development
-        threaded=True    # Enable threading for concurrent requests
-    )
+    logger.info(f"Cleanup after processing: {CLEANUP_AFTER_PROCESSING}")
+    app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
