@@ -2,7 +2,7 @@ pdf_extractor
 pdf_extractor is a web application designed to extract structured outlines from PDF documents. The project features a Flask-based backend that processes uploaded PDFs and a React frontend with Tailwind CSS for a seamless user experience. Users can upload PDFs, view previews, and receive extracted headings in an organized format, making it ideal for document analysis and summarization.
 
 🏗️ Architecture
-pdf_extractor/
+Smart-PDF-Insight/
 │
 ├── backend/                        # 🔙 Flask app
 │   ├── app/
@@ -40,7 +40,6 @@ pdf_extractor/
 │
 ├── .gitignore                     # Global ignore (optional)
 ├── README.md                      # 📘 This file
-
 Features
 
 PDF Upload and Preview: Upload PDFs via a user-friendly React interface with real-time previews.
