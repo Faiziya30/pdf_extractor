@@ -1,0 +1,21 @@
+2025-07-27 14:28:01,207 - INFO - Starting PDF Heading Extractor API
+2025-07-27 14:28:01,207 - INFO - Upload folder: app/input
+2025-07-27 14:28:01,207 - INFO - Max file size: 50MB
+2025-07-27 14:28:01,207 - INFO - Cleanup after processing: True
+2025-07-27 14:28:01,249 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.121.94:5000
+2025-07-27 14:28:01,249 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-27 14:28:25,363 - INFO - 127.0.0.1 - - [27/Jul/2025 14:28:25] "[33mGET / HTTP/1.1[0m" 404 -
+2025-07-27 14:28:25,469 - INFO - 127.0.0.1 - - [27/Jul/2025 14:28:25] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-27 14:36:48,178 - INFO - Starting PDF Heading Extractor API
+2025-07-27 14:36:48,178 - INFO - Upload folder: input
+2025-07-27 14:36:48,178 - INFO - Max file size: 50MB
+2025-07-27 14:36:48,178 - INFO - Cleanup after processing: True
+2025-07-27 14:36:48,209 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.121.94:5000
+2025-07-27 14:36:48,210 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-27 14:36:52,235 - INFO - 127.0.0.1 - - [27/Jul/2025 14:36:52] "[33mGET / HTTP/1.1[0m" 404 -
