@@ -6,6 +6,7 @@ SmartPDF is a document-processing foundation that extracts PDF metadata, page te
 
 - Safe PDF upload with extension, MIME, size, page-count, and content validation
 - PyMuPDF metadata and page text extraction
+- Separate document-title detection with normalized PDF metadata and metadata status
 - Heuristic heading detection using typography, numbering, casing, length, and spacing
 - Clickable outline and page-wise results dashboard
 - Consistent JSON errors and restricted local-development CORS
@@ -100,4 +101,4 @@ pytest
 
 ## Current Limitations
 
-Document records are held in memory and disappear when the backend restarts. Heading detection is an explainable layout heuristic, not AI. OCR, table and figure extraction, summaries, embeddings, RAG, authentication, accounts, and persistent storage are planned future phases and are not part of Day 1.
+Document records are held in memory and disappear when the backend restarts. Heading confidence is an explainable layout heuristic, not a trained confidence score or AI model. OCR, table and figure extraction, summaries, embeddings, RAG, authentication, accounts, and persistent storage are planned future phases and are not part of Day 1.

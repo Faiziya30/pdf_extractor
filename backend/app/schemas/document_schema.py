@@ -19,14 +19,18 @@ class Metadata(BaseModel):
     subject: Optional[str] = None
     creator: Optional[str] = None
     producer: Optional[str] = None
+    creationDate: Optional[str] = None
+    modDate: Optional[str] = None
 
 
 class DocumentSummary(BaseModel):
     id: str
     filename: str
+    title: Optional[str] = None
     page_count: int
     file_size: int
     metadata: Metadata
+    metadata_status: str = "empty"
 
 
 class Page(BaseModel):
